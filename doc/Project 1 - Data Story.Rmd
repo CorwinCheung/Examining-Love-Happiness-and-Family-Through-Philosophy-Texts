@@ -153,7 +153,7 @@ barplot(freq$n,names.arg = freq$author,las=2, col = 'yellow',main = "Fraction of
 
 
 
-Let's first explore these partitioned data sets via Wordclouds.
+Let's first explore these partitioned data sets via Wordclouds. WordClouds are a great visualization tool to see which words are most prevelant in the selected sentences we picked with each section. This data story removed stopwords and the words that are filtered for so that the most important words are displayed. 
 
 
 ```{r}
@@ -176,7 +176,7 @@ dataDS.Corpus<-Corpus(VectorSource(WordCloudL))
 #Data cleaning and wrangling:
 dataDS.Clean<-tm_map(dataDS.Corpus, PlainTextDocument)
 dataDS.Clean<-tm_map(dataDS.Clean,removeWords,stopwords("english"))
-dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("love","lover","loves","loved"))
+dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("love","lover","loves","loved","one","will"))
 dataDS.Clean<-tm_map(dataDS.Clean,removePunctuation)
 
 wordcloud(words = dataDS.Clean, min.freq = 1,
@@ -195,7 +195,7 @@ dataDS.Corpus<-Corpus(VectorSource(WordCloudH))
 #Data cleaning and wrangling:
 dataDS.Clean<-tm_map(dataDS.Corpus, PlainTextDocument)
 dataDS.Clean<-tm_map(dataDS.Clean,removeWords,stopwords("english"))
-dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("happy","happiness"))
+dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("happy","happiness","one","will"))
 dataDS.Clean<-tm_map(dataDS.Clean,removePunctuation)
 
 wordcloud(words = dataDS.Clean, min.freq = 1,
@@ -223,63 +223,36 @@ wordcloud(words = dataDS.Clean, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 ```
 
-These word clouds are great, and capture the most common words in family, happiness, and family datasets. However, there are a lot of very common, useless words like one, will, and can. We can employ term frequence inverse document frequency to get better, more accurate word clouds. These word clouds will have more interesting and unique words to each topic that we can analyze in the next section: word embeddings.
-
-Wordclouds with tf-idf
-
-```{r}
-# library("tm")
-# library("SnowballC")
-# library("wordcloud")
-# library("RColorBrewer")
-# library(dplyr)
-# library(tidytext)
-# 
-# tdm_tfidf = TermDocumentMatrix()
-# dtm <- DocumentTermMatrix(dataDS.Clean,
-#                           control = list(weighting = function(x)
-#                                              weightTfIdf(x, 
-#                                                          normalize =FALSE),
-#                                          stopwords = TRUE))
-# wordcloud(dtm)
-# print(dtm)
-# 
-# ff.all = Corpus(VectorSource(WordCloudF))
-# tdm.all<-TermDocumentMatrix(ff.all)
-# tdm.tidy=tidy(tdm.all)
-# tdm.overall=summarise(group_by(tdm.tidy, term), sum(count))
-# 
-# 
-# bind_tf_idf()
-```
-
-
-
-
-Analyzing using word embeddings
+These word clouds are great, and capture the most common words in family, happiness, and family datasets. Now, we'll analyze using word embeddings. By fitting a model to the sentence data, we get a word embedding that can predict which terms are the most similar to any other word in the set. For Love: the closest words are Jove, conceit, kindness, aversion, and complacency. For happiness, the closest 5 words are appetite, inclination, wickedness, satisfaction, and pride. And for family, the closest 5 words are tribe, valour, kingdom, apparel, and nation(all using cosine similarity functions). Looking at the closest words for each of the prevalent word clouds gives us a web of how the terms are related in these philosophical texts. 
 
 ```{r}
 # library(devtools)
 # install_github("mukul13/rword2vec")
 # 
-# library(rword2vec)
+library(word2vec)
 
+x = data$sentence_str
 
-# model=word2vec(train_file = data,output_file = "vec.bin",binary=1)
-# 
-# dist=distance(file_name = "philosophy_data.csv",search_word = "king",num = 10)
-# dist
+model <- word2vec(x = x, type = "cbow", dim = 15, iter = 20)
 
+embedding <- as.matrix(model)
+lookslike <- predict(model, c("love", "family","happiness"), type = "nearest", top_n = 5)
+lookslike
 
-# cosine similarity for all of the most important words in love, happiness, and family. 
-# 
-# term frequence inverse document frequency
+#Looking at the closest words from the love wordcloud
+lookslike <- predict(model, c("one","man","god","will"), type = "nearest", top_n = 5)
 
+#Looking at the closest words from the happiness wordcloud
+lookslike <- predict(model, c("one","life","good","will"), type = "nearest", top_n = 5)
 
+#Looking at the closest words from the fanily wordcloud
+lookslike <- predict(model, c("one","children","god","will"), type = "nearest", top_n = 5)
 ```
 
 
 Conclusion
+
+Looking at the top authors: we can see that Beauvoir, Marcus Aurelius, Davis and Wollstonecraft write the most about love, family and happiness. Through our wordclouds, we can see that the most important terms for each topic are ... ... ... for love, ... ... ... for family, and ... ... ... for happiness. Further, we can train a word embedding on this data to see that these words are interconnected to each other. Through these analysis methods, we learned about love, family, and happiness, who wrote about them and how much they were written about, which words were the most important to these topics, and how this words and topics are related through word embeddings. 
 
 
 
