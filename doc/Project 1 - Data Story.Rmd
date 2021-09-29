@@ -1,0 +1,287 @@
+---
+title: "Project 1 - Data Story"
+author: "Corwin Cheung"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+This notebook was prepared with the following environmental settings.
+
+```{r}
+print(R.version)
+```
+
+### What this data story aims to explore
+1.  Examine the relationship between family, love, and happiness though statistical analysis, data mining, and visualization of the history of philosophy dataset, available for download at https://www.kaggle.com/kouroshalizadeh/history-of-philosophy
+2.  Specifically this data story will look at how each of our three topics: family, love, and happiness, are related to each other through word embeddings, sentiment analysis and illustrative word clouds. This story will also include basic information and visualization about the dataset to familiarize the reader before we explore deeper. This data story will also explore how much these three topics are mentioned in the data and which philosophers speak about these topics of interest.
+
+Read in data
+
+```{r}
+data = read.csv("~/Desktop/Programming/R/Data/philosophy_data.csv")
+#Checking if the dataset was read in correctly
+dim(data)
+colnames(data)
+head(data)
+
+```
+
+Now let's look at the dataset and familiarize ourselves with the data. We have 360808 sentences from 59 different works and 36 different authors. Displayed below is a histogram of the number of sentences each author has in the dataset: Aristotle with the most entries at 48,779 and Epictetus with the least at 323. Let's look at two other pieces of information available to us in this data set. We can sort each sentence by the school of philosophical thought that it belongs to and then plot the average sentence lengths in characters for each of the schools. Capitalism is the school of thought with the longest average(mean) sentences at 187.6 characters per and plato has the shortest average sentences at 114.9 characters per. Finally, 5 sentences are sampled and printed from the dataset, so we can understand what type of sentences we are analyzing.
+
+```{r}
+library(dplyr)
+length(unique(data$title))
+length(unique(data$author))
+
+frequencies = data %>%
+  count(author)
+
+frequencies = sort(table(data$author), T)
+
+barplot(frequencies,las=2,col='lightblue',main="Sentences from each author")
+
+school = data  %>%
+  count(school)
+
+average_lengths = vector()
+school_sentences = vector()
+for (i in school$school){
+  school_sentences = data[data$school==i,]
+  average_lengths = append(average_lengths, mean(school_sentences$sentence_length))
+}
+
+#reordering for graph printing
+average_lengths = sort(average_lengths, T)
+
+school$school = c("capitalism","empiricism","german_idealism","continental","rationalism","aristotle","feminism","communism","phenomenology","stoicism","analytic","nietzsche","plato")
+
+school$school <- factor(school$school, levels = c("capitalism","empiricism","german_idealism","continental","rationalism","aristotle","feminism","communism","phenomenology","stoicism","analytic","nietzsche","plato"))
+
+#sort low to high
+
+plot(school$school,average_lengths,xlab="", ylab="average length of sentences in chars",las=2,main="average length of sentences for each school of thought")
+
+sample(data$sentence_str,5)
+
+```
+
+
+Splitting into sets that contain references to love, family, and happiness. By using the str_detect function of the stringr library, we can take all sentences with the words love, loves, and lover and make a Love dataset, with the words happiness and happy andd make a Happiness dataset, and with the words family and families and make a Family Dataset. Since these are the three topics that this data story will look into through word embeddings, sentiment analysis, and wordclouds, partitioning these sets is an important step in this exploratory analysis. The love dataset has the most philosophical sentences with 5812, followed by 2008 sentences mentioning happiness directly, and lastly 1572 with a direct reference to family. We can again plot which authors contributed most to each dataset, and so three bargraphs will be show below. Beacuvoir talks the most about love with 1467 mentions. Aristotle discusses Happiness the most with 278 mentions, followed by Plato with 252. And Beauvoir writes on family the most with 207 mentions, followed closely by Deleuze with 195 mentions. Finally, 3 sentences from each of the sets: love, happiness, and family, are sampled and printed.
+
+```{r}
+library(stringr)
+LoveData = rbind(data[str_detect(data$tokenized_txt,'love'),], data[str_detect(data$tokenized_txt,'loves'),], data[str_detect(data$tokenized_txt,'lover'),])
+dim(LoveData)
+HappinessData = rbind(data[str_detect(data$tokenized_txt,'happiness'),], data[str_detect(data$tokenized_txt,'happy'),])
+dim(HappinessData)
+FamilyData = rbind(data[str_detect(data$tokenized_txt,'family'),], data[str_detect(data$tokenized_txt,'families'),])
+dim(FamilyData)
+
+frequencies = LoveData %>%
+  count(author)
+
+frequencies = sort(table(LoveData$author), T)
+
+barplot(frequencies,las=2,col='lightgreen', main ="Number of Lines directly referring to Love by each philosopher")
+
+print(frequencies)
+
+frequencies = HappinessData %>%
+  count(author)
+
+frequencies = sort(table(HappinessData$author), T)
+
+barplot(frequencies,las=2,col='lightblue', main ="Number of Lines directly referring to Happiness by each philosopher")
+
+frequencies = FamilyData %>%
+  count(author)
+
+frequencies = sort(table(FamilyData$author), T)
+
+barplot(frequencies,las=2,col='yellow', main ="Number of Lines directly referring to Family by each philosopher")
+
+sample(LoveData$sentence_str,3)
+sample(HappinessData$sentence_str,3)
+sample(FamilyData$sentence_str,3)
+```
+
+Which philosophers write the most on these topics: love, family, and happiness, proportionally to how much they wrote in the whole dataset? Let's explore this with a graph, but using percentages of the sentences that the philosophers dedicated to each topic. If we use these percentage filters, we uncover that although Beauvoir still comments the most proportionally on Love, Marcus Aurelius and Wollstonecraft lead the philosophers in referencing happiness the most, and Davis, by far, represents family the most. These are very important observations for answering the question of which philosophers talk about which subjects and how often each subject is being referred to in each philosopher's work. 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+#storing percentages based on lines for love, happiness, or family and total lines
+
+freq = data %>%
+  count(author)
+Lfreq = LoveData %>%
+  count(author)
+Hfreq = HappinessData %>%
+  count(author)
+Ffreq = FamilyData %>%
+  count(author)
+# print(freq$n)
+# print(Lfreq$n)
+# print(Hfreq$n)
+# print(Ffreq$n)
+
+
+Love_percentages = c(531/48779, 1467/13017,    4/2734,   15/3059,  122/12540,   15/5999,    1/1132,    1/323 ,  45/5308  , 74/15240   ,71/22700 , 13/15239, 244/8312 ,   7/5742 ,  69/14128 ,   1/3411  , 23/12479 , 81/5027,   1/4469 ,  37/13120,   44/8885  ,550/12997 ,  35/2212 ,  34/13489  , 66/7592 ,   5/3668 , 495/13548, 1171/38366  ,  1/4678 ,  6/7373,  0/3090 ,  37/5073 ,  27/11693 , 295/3793 ,   3/9034  ,221/2559)
+
+Happiness_percentages = c(278/48779, 207/13017,    4/2734,   7/3059,  4/12540,   12/5999,    5/1132,    3/323 ,  9/5308  , 53/15240   ,66/22700 , 6/15239, 68/8312 ,   4/5742 ,  189/14128 ,   4/3411  , 15/12479 , 88/5027,   2/4469 ,  0/13120,   145/8885  ,186/12997 ,  48/2212 ,  25/13489  , 5/7592 ,   1/3668 , 215/13548, 252/38366  ,  0/4678 ,  3/7373,  8/3090 ,  4/5073 ,  23/11693 , 13/3793 ,   2/9034  ,54/2559)
+
+Family_percentages = c(84/48779, 207/13017,    0/2734,   92/3059,  195/12540,   1/5999,    0/1132,    0/323 ,  3/5308  , 169/15240   ,159/22700 , 0/15239, 38/8312 ,   6/5742 ,  10/14128 ,   5/3411  , 19/12479 , 4/5027,   6/4469 ,  30/13120,   39/8885  ,8/12997 ,  5/2212 ,  144/13489  , 4/7592 ,   0/3668 , 15/13548, 129/38366  ,  3/4678 ,  2/7373,  15/3090 ,  3/5073 ,  123/11693 , 0/3793 ,   8/9034  ,46/2559)
+
+freq$n = Love_percentages
+
+barplot(freq$n,names.arg = freq$author,las=2, col = 'lightgreen',main = "Fraction of lines directly referencing Love")
+
+freq$n = Happiness_percentages
+
+barplot(freq$n,names.arg = freq$author,las=2, col = 'lightblue',main = "Fraction of lines directly referencing Happiness")
+
+freq$n = Family_percentages
+
+barplot(freq$n,names.arg = freq$author,las=2, col = 'yellow',main = "Fraction of lines directly referencing Family")
+
+
+```
+
+
+
+
+Let's first explore these partitioned data sets via Wordclouds.
+
+
+```{r}
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
+library(dplyr)
+library(stringr)
+
+# creating corpus for the word cloud from LoveData
+
+
+WordCloudL = subset(LoveData,select = c(tokenized_txt))
+
+
+dataDS.Corpus<-Corpus(VectorSource(WordCloudL))
+
+
+#Data cleaning and wrangling:
+dataDS.Clean<-tm_map(dataDS.Corpus, PlainTextDocument)
+dataDS.Clean<-tm_map(dataDS.Clean,removeWords,stopwords("english"))
+dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("love","lover","loves","loved"))
+dataDS.Clean<-tm_map(dataDS.Clean,removePunctuation)
+
+wordcloud(words = dataDS.Clean, min.freq = 1,
+          max.words=100, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+
+# creating corpus for the word cloud from HappinessData
+
+WordCloudH = subset(HappinessData,select = c(tokenized_txt))
+
+
+dataDS.Corpus<-Corpus(VectorSource(WordCloudH))
+
+
+#Data cleaning and wrangling:
+dataDS.Clean<-tm_map(dataDS.Corpus, PlainTextDocument)
+dataDS.Clean<-tm_map(dataDS.Clean,removeWords,stopwords("english"))
+dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("happy","happiness"))
+dataDS.Clean<-tm_map(dataDS.Clean,removePunctuation)
+
+wordcloud(words = dataDS.Clean, min.freq = 1,
+          max.words=100, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+
+# creating corpus for the word cloud from FamilyData
+
+dim(FamilyData)
+WordCloudF = subset(FamilyData,select = c(tokenized_txt))
+
+
+dataDS.Corpus<-Corpus(VectorSource(WordCloudF))
+
+
+#Data cleaning and wrangling:
+dataDS.Clean<-tm_map(dataDS.Corpus, PlainTextDocument)
+dataDS.Clean<-tm_map(dataDS.Clean,removeWords,stopwords("english"))
+dataDS.Clean = tm_map(dataDS.Clean,removeWords,c("family","families"))
+dataDS.Clean<-tm_map(dataDS.Clean,removePunctuation)
+
+wordcloud(words = dataDS.Clean, min.freq = 1,
+          max.words=100, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
+These word clouds are great, and capture the most common words in family, happiness, and family datasets. However, there are a lot of very common, useless words like one, will, and can. We can employ term frequence inverse document frequency to get better, more accurate word clouds. These word clouds will have more interesting and unique words to each topic that we can analyze in the next section: word embeddings.
+
+Wordclouds with tf-idf
+
+```{r}
+# library("tm")
+# library("SnowballC")
+# library("wordcloud")
+# library("RColorBrewer")
+# library(dplyr)
+# library(tidytext)
+# 
+# tdm_tfidf = TermDocumentMatrix()
+# dtm <- DocumentTermMatrix(dataDS.Clean,
+#                           control = list(weighting = function(x)
+#                                              weightTfIdf(x, 
+#                                                          normalize =FALSE),
+#                                          stopwords = TRUE))
+# wordcloud(dtm)
+# print(dtm)
+# 
+# ff.all = Corpus(VectorSource(WordCloudF))
+# tdm.all<-TermDocumentMatrix(ff.all)
+# tdm.tidy=tidy(tdm.all)
+# tdm.overall=summarise(group_by(tdm.tidy, term), sum(count))
+# 
+# 
+# bind_tf_idf()
+```
+
+
+
+
+Analyzing using word embeddings
+
+```{r}
+# library(devtools)
+# install_github("mukul13/rword2vec")
+# 
+# library(rword2vec)
+
+
+# model=word2vec(train_file = data,output_file = "vec.bin",binary=1)
+# 
+# dist=distance(file_name = "philosophy_data.csv",search_word = "king",num = 10)
+# dist
+
+
+# cosine similarity for all of the most important words in love, happiness, and family. 
+# 
+# term frequence inverse document frequency
+
+
+```
+
+
+Conclusion
+
+
+
+
+
