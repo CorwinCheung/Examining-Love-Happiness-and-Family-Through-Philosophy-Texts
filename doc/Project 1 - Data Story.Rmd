@@ -205,7 +205,6 @@ wordcloud(words = dataDS.Clean, min.freq = 1,
 
 # creating corpus for the word cloud from FamilyData
 
-dim(FamilyData)
 WordCloudF = subset(FamilyData,select = c(tokenized_txt))
 
 
@@ -223,7 +222,7 @@ wordcloud(words = dataDS.Clean, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 ```
 
-These word clouds are great, and capture the most common words in family, happiness, and family datasets. Now, we'll analyze using word embeddings. By fitting a model to the sentence data, we get a word embedding that can predict which terms are the most similar to any other word in the set. For Love: the closest words are Jove, conceit, kindness, aversion, and complacency. For happiness, the closest 5 words are appetite, inclination, wickedness, satisfaction, and pride. And for family, the closest 5 words are tribe, valour, kingdom, apparel, and nation(all using cosine similarity functions). Looking at the closest words for each of the prevalent word clouds gives us a web of how the terms are related in these philosophical texts. 
+These word clouds are great, and capture the most common words in family, happiness, and family datasets. Now, we'll analyze using word embeddings. By fitting a model to the sentence data, we get a word embedding that can predict which terms are the most similar to any other word in the set. For Love: the closest words are Jove, conceit, kindness, aversion, and complacency. For happiness, the closest 5 words are appetite, inclination, wickedness, satisfaction, and pride. And for family, the closest 5 words are tribe, valour, kingdom, apparel, and nation(all using cosine similarity functions). Looking at the closest words for each of the prevalent word clouds gives us a web of how the terms are related in these philosophical texts. For example we see that the love and happiness topics both talk about good as an important word. and family and love both have woman as an important word. Looking at the dataframe closest words for each of the important wordclouds, we can see more similarities between the important words of the data.
 
 ```{r}
 # library(devtools)
@@ -240,19 +239,22 @@ lookslike <- predict(model, c("love", "family","happiness"), type = "nearest", t
 lookslike
 
 #Looking at the closest words from the love wordcloud
-lookslike <- predict(model, c("one","man","god","will"), type = "nearest", top_n = 5)
+lookslike <- predict(model, c("woman","man","god","good"), type = "nearest", top_n = 5)
+lookslike
 
 #Looking at the closest words from the happiness wordcloud
-lookslike <- predict(model, c("one","life","good","will"), type = "nearest", top_n = 5)
+lookslike <- predict(model, c("man","life","good","must"), type = "nearest", top_n = 5)
+lookslike
 
 #Looking at the closest words from the fanily wordcloud
-lookslike <- predict(model, c("one","children","god","will"), type = "nearest", top_n = 5)
+lookslike <- predict(model, c("women","children","father","social"), type = "nearest", top_n = 5)
+lookslike
 ```
 
 
 Conclusion
 
-Looking at the top authors: we can see that Beauvoir, Marcus Aurelius, Davis and Wollstonecraft write the most about love, family and happiness. Through our wordclouds, we can see that the most important terms for each topic are ... ... ... for love, ... ... ... for family, and ... ... ... for happiness. Further, we can train a word embedding on this data to see that these words are interconnected to each other. Through these analysis methods, we learned about love, family, and happiness, who wrote about them and how much they were written about, which words were the most important to these topics, and how this words and topics are related through word embeddings. 
+Looking at the top authors: we can see that Beauvoir, Marcus Aurelius, Davis and Wollstonecraft write the most about love, family and happiness. Through our wordclouds, we can see that the most important terms for each topic are "woman","man","god","good" for love, "man","life","good","must" for family, and "women","children","father","social" for happiness. Further, we can train a word embedding on this data to see that these words are interconnected to each other. Through these analysis methods, we learned about love, family, and happiness, who wrote about them and how much they were written about, which words were the most important to these topics, and how this words and topics are related through word embeddings. 
 
 
 
