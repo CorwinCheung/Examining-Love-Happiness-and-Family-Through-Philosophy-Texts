@@ -1,0 +1,36 @@
+---
+title: "Word_Embedding_Model"
+author: "Corwin Cheung"
+date: "9/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Word Embedding Model for the Output Folder
+
+```{r}
+data = read.csv("~/Desktop/Programming/R/Data/philosophy_data.csv")
+
+library(word2vec)
+
+x = data$sentence_str
+
+model <- word2vec(x = x, type = "cbow", dim = 15, iter = 20)
+
+embedding <- as.matrix(model)
+lookslike <- predict(model, c("love", "family","happiness"), type = "nearest", top_n = 5)
+lookslike
+
+#Looking at the closest words from the love wordcloud
+lookslike <- predict(model, c("woman","man","god","good"), type = "nearest", top_n = 5)
+
+#Looking at the closest words from the happiness wordcloud
+lookslike <- predict(model, c("man","life","good","must"), type = "nearest", top_n = 5)
+
+#Looking at the closest words from the fanily wordcloud
+lookslike <- predict(model, c("women","children","father","social"), type = "nearest", top_n = 5)
+```
+
