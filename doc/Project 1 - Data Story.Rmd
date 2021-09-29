@@ -14,8 +14,11 @@ print(R.version)
 ```
 
 ### What this data story aims to explore
-1.  Examine the relationship between family, love, and happiness though statistical analysis, data mining, and visualization of the history of philosophy dataset, available for download at https://www.kaggle.com/kouroshalizadeh/history-of-philosophy
-2.  Specifically this data story will look at how each of our three topics: family, love, and happiness, are related to each other through word embeddings, sentiment analysis and illustrative word clouds. This story will also include basic information and visualization about the dataset to familiarize the reader before we explore deeper. This data story will also explore how much these three topics are mentioned in the data and which philosophers speak about these topics of interest.
+1.  Examine the relationship between family, love, and happiness though statistical analysis, data mining, and visualization of the history of philosophy dataset, 
+available for download at https://www.kaggle.com/kouroshalizadeh/history-of-philosophy
+2.  Specifically this data story will look at how each of our three topics: family, love, and happiness, are related to each other through word embeddings, sentiment analysis and illustrative word clouds. 
+This story will also include basic information and visualization about the dataset to familiarize the reader before we explore deeper. 
+This data story will also explore how much these three topics are mentioned in the data and which philosophers speak about these topics of interest.
 
 Read in data
 
@@ -28,7 +31,13 @@ head(data)
 
 ```
 
-Now let's look at the dataset and familiarize ourselves with the data. We have 360808 sentences from 59 different works and 36 different authors. Displayed below is a histogram of the number of sentences each author has in the dataset: Aristotle with the most entries at 48,779 and Epictetus with the least at 323. Let's look at two other pieces of information available to us in this data set. We can sort each sentence by the school of philosophical thought that it belongs to and then plot the average sentence lengths in characters for each of the schools. Capitalism is the school of thought with the longest average(mean) sentences at 187.6 characters per and plato has the shortest average sentences at 114.9 characters per. Finally, 5 sentences are sampled and printed from the dataset, so we can understand what type of sentences we are analyzing.
+Now let's look at the dataset and familiarize ourselves with the data. 
+We have 360808 sentences from 59 different works and 36 different authors.
+Displayed below is a histogram of the number of sentences each author has in the dataset: Aristotle with the most entries at 48,779 and Epictetus with the least at 323. 
+Let's look at two other pieces of information available to us in this data set.
+We can sort each sentence by the school of philosophical thought that it belongs to and then plot the average sentence lengths in characters for each of the schools. 
+Capitalism is the school of thought with the longest average(mean) sentences at 187.6 characters per and plato has the shortest average sentences at 114.9 characters per. 
+Finally, 5 sentences are sampled and printed from the dataset, so we can understand what type of sentences we are analyzing.
 
 ```{r}
 library(dplyr)
@@ -68,7 +77,15 @@ sample(data$sentence_str,5)
 ```
 
 
-Splitting into sets that contain references to love, family, and happiness. By using the str_detect function of the stringr library, we can take all sentences with the words love, loves, and lover and make a Love dataset, with the words happiness and happy andd make a Happiness dataset, and with the words family and families and make a Family Dataset. Since these are the three topics that this data story will look into through word embeddings, sentiment analysis, and wordclouds, partitioning these sets is an important step in this exploratory analysis. The love dataset has the most philosophical sentences with 5812, followed by 2008 sentences mentioning happiness directly, and lastly 1572 with a direct reference to family. We can again plot which authors contributed most to each dataset, and so three bargraphs will be show below. Beacuvoir talks the most about love with 1467 mentions. Aristotle discusses Happiness the most with 278 mentions, followed by Plato with 252. And Beauvoir writes on family the most with 207 mentions, followed closely by Deleuze with 195 mentions. Finally, 3 sentences from each of the sets: love, happiness, and family, are sampled and printed.
+Splitting into sets that contain references to love, family, and happiness.
+By using the str_detect function of the stringr library, we can take all sentences with the words love, loves, and lover and make a Love dataset, with the words happiness and happy and make a Happiness dataset, and with the words family and families and make a Family Dataset.
+Since these are the three topics that this data story will look into through word embeddings, sentiment analysis, and wordclouds, partitioning these sets is an important step in this exploratory analysis. 
+The love dataset has the most philosophical sentences with 5812, followed by 2008 sentences mentioning happiness directly, and lastly 1572 with a direct reference to family.
+We can again plot which authors contributed most to each dataset, and so three bargraphs will be show below. 
+Beacuvoir talks the most about love with 1467 mentions.
+Aristotle discusses Happiness the most with 278 mentions, followed by Plato with 252. 
+And Beauvoir writes on family the most with 207 mentions, followed closely by Deleuze with 195 mentions. 
+Finally, 3 sentences from each of the sets: love, happiness, and family, are sampled and printed.
 
 ```{r}
 library(stringr)
@@ -107,7 +124,10 @@ sample(HappinessData$sentence_str,3)
 sample(FamilyData$sentence_str,3)
 ```
 
-Which philosophers write the most on these topics: love, family, and happiness, proportionally to how much they wrote in the whole dataset? Let's explore this with a graph, but using percentages of the sentences that the philosophers dedicated to each topic. If we use these percentage filters, we uncover that although Beauvoir still comments the most proportionally on Love, Marcus Aurelius and Wollstonecraft lead the philosophers in referencing happiness the most, and Davis, by far, represents family the most. These are very important observations for answering the question of which philosophers talk about which subjects and how often each subject is being referred to in each philosopher's work. 
+Which philosophers write the most on these topics: love, family, and happiness, proportionally to how much they wrote in the whole dataset?
+Let's explore this with a graph, but using percentages of the sentences that the philosophers dedicated to each topic. 
+If we use these percentage filters, we uncover that although Beauvoir still comments the most proportionally on Love, Marcus Aurelius and Wollstonecraft lead the philosophers in referencing happiness the most, and Davis, by far, represents family the most. 
+These are very important observations for answering the question of which philosophers talk about which subjects and how often each subject is being referred to in each philosopher's work. 
 
 ```{r}
 library(dplyr)
@@ -153,7 +173,9 @@ barplot(freq$n,names.arg = freq$author,las=2, col = 'yellow',main = "Fraction of
 
 
 
-Let's first explore these partitioned data sets via Wordclouds. WordClouds are a great visualization tool to see which words are most prevelant in the selected sentences we picked with each section. This data story removed stopwords and the words that are filtered for so that the most important words are displayed. 
+Let's first explore these partitioned data sets via Wordclouds. 
+WordClouds are a great visualization tool to see which words are most prevelant in the selected sentences we picked with each section. 
+This data story removed stopwords and the words that are filtered for so that the most important words are displayed. 
 
 
 ```{r}
@@ -222,7 +244,13 @@ wordcloud(words = dataDS.Clean, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 ```
 
-These word clouds are great, and capture the most common words in family, happiness, and family datasets. Now, we'll analyze using word embeddings. By fitting a model to the sentence data, we get a word embedding that can predict which terms are the most similar to any other word in the set. For Love: the closest words are Jove, conceit, kindness, aversion, and complacency. For happiness, the closest 5 words are appetite, inclination, wickedness, satisfaction, and pride. And for family, the closest 5 words are tribe, valour, kingdom, apparel, and nation(all using cosine similarity functions). Looking at the closest words for each of the prevalent word clouds gives us a web of how the terms are related in these philosophical texts. For example we see that the love and happiness topics both talk about good as an important word. and family and love both have woman as an important word. Looking at the dataframe closest words for each of the important wordclouds, we can see more similarities between the important words of the data.
+These word clouds are great, and capture the most common words in family, happiness, and family datasets. 
+Now, we'll analyze using word embeddings. By fitting a model to the sentence data, we get a word embedding that can predict which terms are the most similar to any other word in the set. 
+For Love: the closest words are Jove, conceit, kindness, aversion, and complacency. 
+For happiness, the closest 5 words are appetite, inclination, wickedness, satisfaction, and pride. 
+And for family, the closest 5 words are tribe, valour, kingdom, apparel, and nation(all using cosine similarity functions). Looking at the closest words for each of the prevalent word clouds gives us a web of how the terms are related in these philosophical texts. 
+For example we see that the love and happiness topics both talk about good as an important word. and family and love both have woman as an important word. 
+Looking at the dataframe closest words for each of the important wordclouds, we can see more similarities between the important words of the data.
 
 ```{r}
 # library(devtools)
@@ -254,7 +282,10 @@ lookslike
 
 Conclusion
 
-Looking at the top authors: we can see that Beauvoir, Marcus Aurelius, Davis and Wollstonecraft write the most about love, family and happiness. Through our wordclouds, we can see that the most important terms for each topic are "woman","man","god","good" for love, "man","life","good","must" for family, and "women","children","father","social" for happiness. Further, we can train a word embedding on this data to see that these words are interconnected to each other. Through these analysis methods, we learned about love, family, and happiness, who wrote about them and how much they were written about, which words were the most important to these topics, and how this words and topics are related through word embeddings. 
+Looking at the top authors: we can see that Beauvoir, Marcus Aurelius, Davis and Wollstonecraft write the most about love, family and happiness. 
+Through our wordclouds, we can see that the most important terms for each topic are "woman","man","god","good" for love, "man","life","good","must" for family, and "women","children","father","social" for happiness. 
+Further, we can train a word embedding on this data to see that these words are interconnected to each other. 
+Through these analysis methods, we learned about love, family, and happiness, who wrote about them and how much they were written about, which words were the most important to these topics, and how this words and topics are related through word embeddings. 
 
 
 
