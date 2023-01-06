@@ -1,13 +1,8 @@
-# Applied Data Science @ Columbia
+# Examining Love, Happiness, and Family through philosophy text data
 ## Fall 2021
-## Project 1: A "data story" on the history of philosophy
+## A "data story" on the history of philosophy
 
 <img src="figs/100126-the-glass.jpeg" width="500">
-
-### [Project Description](doc/)
-This is the first and only *individual* (as opposed to *team*) project this semester. 
-
-Term: Fall 2021
 
 + Project title: Examining Love, Happiness, and Family through philosophy text data
 + This project is conducted by Corwin Cheung
